@@ -2,4 +2,4 @@ flask==2.0.1
 librosa==0.9.1
 numpy==1.21.2
 sounddevice==0.4.3
-scipy==1.7.1
+scipy==1.8.0
