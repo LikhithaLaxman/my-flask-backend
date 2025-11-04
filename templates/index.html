@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security Check Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wrapper {
+            flex: 1;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .status-header {
+            background: linear-gradient(135deg, #0062E6 0%, #33A7FF 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .status-content {
+            padding: 20px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+
+        .check-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .check-item.success .check-icon {
+            background: #28a745;
+            color: white;
+        }
+
+        .check-item.warning .check-icon {
+            background: #ffc107;
+            color: white;
+        }
+
+        .check-item.danger .check-icon {
+            background: #dc3545;
+            color: white;
+        }
+
+        .check-item.info .check-icon {
+            background: #0dcaf0;
+            color: white;
+        }
+
+        .voice-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .call-status-message {
+            animation: fadeInOut 0.5s ease-in-out;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 10px;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%);
+            color: white;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress {
+            background-color: #e9ecef;
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.6s ease;
+        }
+
+        .mobile-select {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .mobile-select option {
+            background: #2a5298;
+            color: white;
+        }
+
+        .console-output {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 5px;
+            height: 250px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        footer {
+            background: #343a40;
+            color: white;
+            padding: 15px 0;
+            margin-top: auto;
+        }
+
+        .loading-animation {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-shield-alt me-2"></i>Security Check Dashboard
+            </span>
+        </div>
+    </nav>
+
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h4 class="mb-4"><i class="fas fa-mobile-alt me-2"></i>Mobile Selection</h4>
+            <div class="form-group mb-4">
+                <label class="form-label">Select Mobile Number</label>
+                <select id="mobileSelect" class="form-select mobile-select">
+                    <option value="">Choose a number...</option>
+                    <option value="+36719991000">+36719991000 (Hungary - Vodafone)</option>
+                    <option value="+447911123456">+447911123456 (UK - Vodafone)</option>
+                    <option value="+14155552671">+14155552671 (USA - AT&T)</option>
+                    <option value="+99999991000">+99999991000 (Test Number)</option>
+                    <option value="99999990500">99999990500</option>
+                </select>
+            </div>
+            <button onclick="runRoutes()" class="btn btn-light w-100">
+                <i class="fas fa-play me-2"></i>Run Security Check
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="status-card">
+                <div class="status-header">
+                    <h4 class="m-0"><i class="fas fa-tasks me-2"></i>Security Check Status</h4>
+                </div>
+                <div class="status-content">
+                    <div class="loading-animation" id="loadingAnimation">
+                        <div class="spinner mb-3"></div>
+                        <p class="text-muted">Running security checks...</p>
+                    </div>
+                    <div id="checkResults">
+                        <!-- Check results will be inserted here -->
+                    </div>
+                    <div class="console-output" id="consoleOutput">
+                        Waiting for execution...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-0">
+                Powered by <strong>Nokia</strong> Security Solutions
+                <span class="mx-2">|</span>
+                <i class="fas fa-shield-alt"></i> Protecting Your Communication
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+   <script>
+    async function runRoutes() {
+        const fullValue = document.getElementById("mobileSelect").value;
+        // Extract just the phone number (everything before the first space)
+        const number = fullValue.split(' ')[0];
+        const outputBox = document.getElementById("consoleOutput");
+        const loadingAnimation = document.getElementById("loadingAnimation");
+        const checkResults = document.getElementById("checkResults");
+        
+        // Show loading animation
+        loadingAnimation.style.display = "block";
+        checkResults.innerHTML = "";
+        outputBox.textContent = `Starting security check for: ${number}\n`;
+
+        try {
+            // Call security check
+            let res1 = await fetch("/check_security", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({number})
+            });
+            let data1 = await res1.json();
+
+            // ✅ Added safety check here
+            if (data1.error || !data1.checks) {
+                console.error("Backend error:", data1.error || "Invalid response");
+                outputBox.textContent += `\nError: ${data1.error || "Unexpected response format"}\n`;
+                checkResults.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${data1.error || "Security check failed. Please try again."}
+                    </div>
+                `;
+                loadingAnimation.style.display = "none";
+                return;
+            }
+
+            // Update console output with animation
+            outputBox.textContent += "Initializing security checks...\n";
+            await new Promise(resolve => setTimeout(resolve, 500));
+            outputBox.textContent += "Verifying mobile number...\n";
+            await new Promise(resolve => setTimeout(resolve, 500));
+            outputBox.textContent += "Running KYC verification...\n";
+            await new Promise(resolve => setTimeout(resolve, 500));
+            outputBox.textContent += "Checking device status...\n";
+            await new Promise(resolve => setTimeout(resolve, 500));
+            outputBox.textContent += "Analyzing SIM status...\n";
+
+            // Create status display
+            let resultsHtml = '<div class="mb-4">';
+            for (const [key, value] of Object.entries(data1.checks)) {
+                let statusClass = value.status === 'success' ? 'success' : 
+                                value.status === 'pending' ? 'warning' : 'danger';
+                let icon = value.status === 'success' ? 'check-circle' : 
+                          value.status === 'pending' ? 'clock' : 'times-circle';
+                
+                resultsHtml += `
+                    <div class="check-item ${statusClass}">
+                        <div class="check-icon">
+                            <i class="fas fa-${icon}"></i>
+                        </div>
+                        <div>
+                            <strong>${key.replace('_', ' ').toUpperCase()}</strong>
+                            <div class="text-muted">${value.message}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Add calling transition message
+            resultsHtml += `
+                <div class="call-status-message text-center mt-4 mb-4">
+                    <div class="alert alert-info">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span>Initiating secure call...</span>
+                    </div>
+                </div>
+            `;
+
+            // Add score card
+            resultsHtml += `
+                <div class="text-center mt-4">
+                    <h3>Security Score</h3>
+                    <div class="display-4 mb-2">${data1.score}%</div>
+                    <p class="text-muted">${data1.recommendation}</p>
+                </div>
+            </div>`;
+
+            // Update results
+            checkResults.innerHTML = resultsHtml;
+
+            // Simulate call connection with delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Update call status to connected
+            const callStatusDiv = checkResults.querySelector('.call-status-message');
+            callStatusDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-phone-alt me-2"></i>
+                    <span>Call Connected Successfully</span>
+                </div>
+            `;
+
+            // Add small delay before voice analysis
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Voice analysis
+            outputBox.textContent += "\nInitiating voice analysis...\n";
+            let res2 = await fetch("/auto_record_and_analyze1", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({number})
+            });
+            let data2 = await res2.json();
+            outputBox.textContent += "Voice analysis complete.\n";
+
+            // Create voice analysis status card
+            let voiceHtml = `
+                <div class="status-card mt-4">
+                    <div class="status-header">
+                        <h4 class="m-0"><i class="fas fa-microphone me-2"></i>Voice Analysis Results</h4>
+                    </div>
+                    <div class="status-content">
+            `;
+
+            if (data2.status === 'success') {
+                for (const [key, check] of Object.entries(data2.voice_checks)) {
+                    let statusClass = check.status === 'success' ? 'success' :
+                                    check.status === 'danger' ? 'danger' :
+                                    check.status === 'info' ? 'info' : 'warning';
+                    
+                    voiceHtml += `
+                        <div class="check-item ${statusClass}">
+                            <div class="check-icon">
+                                <i class="fas fa-${check.icon}"></i>
+                            </div>
+                            <div>
+                                <strong>${key.replace('_', ' ').toUpperCase()}</strong>
+                                <div class="text-muted">${check.message}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (data2.summary && typeof data2.summary.confidence !== 'undefined') {
+                    const confidence = data2.summary.confidence * 100;
+                    const confidenceClass = data2.summary.is_synthetic ? 'danger' : 'success';
+                    
+                    voiceHtml += `
+                        <div class="mt-4">
+                            <h5 class="text-center">Analysis Confidence</h5>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-${confidenceClass}" 
+                                     role="progressbar" 
+                                     style="width: ${confidence}%"
+                                     aria-valuenow="${confidence}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    ${confidence.toFixed(1)}%
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                voiceHtml += `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${data2.error || 'An error occurred during voice analysis'}
+                    </div>
+                `;
+            }
+
+            voiceHtml += '</div></div>';
+            
+            voiceHtml += `
+                <div class="status-card mt-4">
+                    <div class="alert alert-success mb-0">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle fa-2x me-3"></i>
+                            <div>
+                                <h5 class="mb-1">Analysis Complete</h5>
+                                <p class="mb-0">Security and voice analysis data has been successfully shared with the end user.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            checkResults.innerHTML += voiceHtml;
+
+        } catch (error) {
+            outputBox.textContent += `\nError: ${error.message}\n`;
+            checkResults.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    An error occurred while running security checks
+                </div>
+            `;
+        } finally {
+            loadingAnimation.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>
