@@ -3,3 +3,4 @@ librosa==0.9.1
 numpy==1.21.2
 sounddevice==0.4.3
 scipy==1.8.0
+gunicorn
