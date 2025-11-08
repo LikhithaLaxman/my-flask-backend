@@ -1,16 +1,6 @@
-Flask==2.3.3
+Flask==2.0.1
 Flask-Cors==3.0.10
 gunicorn==21.2.0
-Werkzeug==2.3.7
-
-# Audio + ML stack (compatible set)
 numpy==1.24.4
-numba==0.58.1
-scipy==1.11.4
-librosa==0.10.1
-soundfile==0.12.1
-sounddevice==0.4.6
-scikit-learn==1.3.2
-
-# Optional but common
-requests==2.31.0
+scipy==1.8.0
+Werkzeug==2.3.7
