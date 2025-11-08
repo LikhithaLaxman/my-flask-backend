@@ -1,5 +1,5 @@
 librosa==0.9.1
-numpy==1.21.2
+numpy==1.26.4
 sounddevice==0.4.3
 scipy==1.8.0
 Flask==3.0.3
